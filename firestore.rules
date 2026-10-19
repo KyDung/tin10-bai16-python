@@ -1,0 +1,46 @@
+rules_version = '2';
+// ⚠ CHỈ ĐỂ THAM KHẢO. KHÔNG publish nếu Firestore đã có rules từ các bài trước (đã chứa email thật của giáo viên):
+// publish file này sẽ ghi đè và khóa tài khoản giáo viên. Bài này dùng đúng lược đồ chung nên rules cũ dùng được luôn.
+// Rules DÙNG CHUNG cho mọi bài học (publish một lần trong Firebase Console -> Firestore -> Rules).
+// Đường dẫn dữ liệu: lessons/{lessonId}/students/{lớp_họtên}
+//  - Học sinh (chưa đăng nhập) chỉ được TẠO/CẬP NHẬT đúng cấu trúc, KHÔNG được đọc hay xóa.
+//  - Giáo viên (đăng nhập Email/Mật khẩu, email nằm trong isTeacher()) được đọc, xóa.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Giáo viên = tài khoản đăng nhập có document trùng UID trong collection `teachers`.
+    function isTeacher() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/teachers/$(request.auth.uid));
+    }
+
+    function validLessonId(id) { return id.matches('^[a-z0-9-]{1,40}$'); }
+    function validKey(key) { return key.matches('^[A-Za-z0-9]{1,15}_[A-Za-z0-9]{1,40}$'); }
+    function okList(d, f) { return !(f in d) || (d[f] is list && d[f].size() <= 30); }
+    function okFinal(d) {
+      return !('final' in d) || (d.final is map && d.final.code is string && d.final.code.size() <= 100000);
+    }
+    function validStudent(lessonId, d) {
+      return d.keys().hasOnly(['lessonId', 'student', 'learning', 'practice', 'progress', 'final', 'updatedAt'])
+        && d.lessonId == lessonId
+        && d.student is map && d.student.name is string && d.student.name.size() <= 60
+        && d.student.className is string && d.student.className.size() <= 15
+        && okList(d, 'learning') && okList(d, 'practice') && okFinal(d)
+        && d.updatedAt == request.time;
+    }
+
+    match /lessons/{lessonId} {
+      allow get, list, delete: if isTeacher();
+      allow create, update: if validLessonId(lessonId)
+        && request.resource.data.keys().hasOnly(['title', 'updatedAt'])
+        && request.resource.data.title is string && request.resource.data.title.size() <= 200
+        && request.resource.data.updatedAt == request.time;
+
+      match /students/{key} {
+        allow get, list, delete: if isTeacher();
+        allow create, update: if validLessonId(lessonId) && validKey(key)
+          && validStudent(lessonId, request.resource.data);
+      }
+    }
+  }
+}
