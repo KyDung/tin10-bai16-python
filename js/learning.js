@@ -10,7 +10,7 @@ const Learning = (() => {
         : `<div class="sh-line ${t === "err" ? "sh-err" : "sh-out"}">${Util.esc(s)}</div>`).join("");
     return `<div class="win win-shell static" oncopy="return false">${Win.titleBar(title || "IDLE Shell 3.12.1")}${Win.menuBar(["File", "Edit", "Shell", "Debug", "Options", "Window", "Help"])}<div class="sh-body"><div class="sh-log">${body}</div></div></div>`;
   }
-  const cmd = (text, expl, hint) => ({ type: "command", text: "Gõ lệnh sau (nhấn Enter khi xong):", expect: [text], show: text, explain: expl, hint });
+  const cmd = (text, expl, hint, label) => ({ type: "command", text: label || "Gõ lệnh sau (nhấn Enter khi xong):", expect: [text], show: text, explain: expl, hint });
 
   // ------------------------------------------------------------ 1. Ngôn ngữ lập trình bậc cao
   const A1 = {
@@ -78,7 +78,7 @@ const Learning = (() => {
 
   // ------------------------------------------------------------ 2. Môi trường lập trình Python
   const A2 = {
-    id: "learn-moi-truong", name: "Môi trường lập trình Python", title: "Môi trường lập trình Python và hai chế độ làm việc", icon: "🖥️", kind: "steps", withEditor: true, fileName: "Bai.py",
+    id: "learn-moi-truong", name: "Môi trường lập trình Python", title: "Môi trường lập trình Python và hai chế độ làm việc", icon: "🖥️", kind: "steps", withEditor: true, fileName: "Bai.py", shellTitle: "IDLE Shell 3.12.1 – Chế độ gõ lệnh trực tiếp",
     lead: "Hoạt động 2: Làm quen với môi trường lập trình Python.",
     intro: `
       <p>Sau khi khởi động, màn hình làm việc của Python (IDLE) có dạng như sau:</p>
@@ -95,7 +95,8 @@ const Learning = (() => {
       <p class="note">📌 <b>Chú ý.</b> Ngoài IDLE, người ta còn soạn thảo chương trình Python bằng các phần mềm như Thonny, PyCharm, Visual Studio, Wingware…</p>
       <p>Em hãy thử cả hai chế độ: gõ lệnh trực tiếp trong cửa sổ Shell, rồi viết một chương trình trong khung soạn thảo, và trả lời các câu hỏi theo từng bước.</p>`,
     steps: [
-      cmd("2 + 3", "Kết quả hiện ngay sau khi nhấn Enter – đó là đặc điểm của <b>chế độ gõ lệnh trực tiếp</b>: gõ một lệnh, có kết quả ngay."),
+      cmd("2 + 3", "Kết quả hiện ngay sau khi nhấn Enter – đó là đặc điểm của <b>chế độ gõ lệnh trực tiếp</b>: gõ một lệnh, có kết quả ngay.", null,
+        "<b>Chế độ gõ lệnh trực tiếp</b> (cửa sổ IDLE Shell bên cạnh): gõ lệnh sau ngay sau dấu nhắc <code>&gt;&gt;&gt;</code> rồi nhấn Enter:"),
       { type: "program", text: "<b>Chế độ soạn thảo:</b> trong khung soạn thảo bên cạnh, gõ chương trình gồm <b>2 dòng lệnh</b> sau (mỗi lệnh một dòng), rồi bấm <b>Chạy chương trình</b> (hoặc nhấn F5):",
         show: 'print("Xin chào")\nprint(5 + 2*7)',
         check(code, run) {

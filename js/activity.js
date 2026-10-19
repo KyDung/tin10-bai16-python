@@ -110,7 +110,7 @@ const Activity = (() => {
 
     const shell = Shell.create($(box, ".sh-host"), {
       sid: "st-" + def.id + "-" + Math.random().toString(36).slice(2, 6),
-      blockPaste: true, stats,
+      blockPaste: true, stats, title: def.shellTitle,
       onResult: (info) => judgeShell(info)
     });
 
